@@ -1,0 +1,55 @@
+*{
+    margin:0:;
+    padding:0;
+}
+.user {
+  background: rgba(255, 255, 255, 0.6);
+  width: 650px;
+  margin-right: auto;
+  margin-left: auto;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  height:400px;
+}
+.user input {
+  width: 500px;
+  margin-right: auto;
+  margin-left: auto;
+  border-radius: 100px;
+}
+.login {
+    background-color:#fff;
+  width: 100%;
+  padding-top: 100px;
+  height:700px;
+}
+
+.user button {
+  width: 500px;
+  border-radius: 100px;
+}
+
+.btn-submit {
+  /* Menyertakan properti CSS yang umum untuk tombol dan tautan */
+  padding: 10px 20px;
+  font-size: 16px;
+  text-align: center;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-submit:hover {
+  background-color: #0056b3;
+  color: white;
+}
+
+a.btn-submit {
+  /* Menambahkan properti untuk memastikan tombol link terlihat seperti tombol */
+  display: inline-block;
+}
+
