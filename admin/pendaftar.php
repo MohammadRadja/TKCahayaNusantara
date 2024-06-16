@@ -3,9 +3,9 @@
 include('../db/auto_load.php');
 
 // Memuat file controller untuk logika verifikasi
-include('./controller/admin_dashboard_control.php');
+include('../admin/controller/admin_dashboard_control.php');
 
-// Memuat header admin
+// Memuat header admin setelah mendapatkan data siswa
 include('../template/admin/header.php');
 ?>
 
@@ -31,6 +31,8 @@ include('../template/admin/header.php');
                     <th>Alamat</th>
                     <th>Email Orang Tua</th>
                     <th>No Telp Orang Tua</th>
+                    <th>Tanggal Bayar</th>
+                    <th>Jumlah Bayar</th>
                     <th>Status Pendaftaran</th>
                     <th>Aksi</th>
                 </tr>
@@ -38,19 +40,19 @@ include('../template/admin/header.php');
             <tbody>
                 <?php foreach ($data_siswa as $siswa) { ?>
                     <tr>
-                        <td><?php echo $siswa['id_siswa']; ?></td>
-                        <td><?php echo $siswa['nama']; ?></td>
-                        <td><?php echo $siswa['tanggal_lahir']; ?></td>
-                        <td><?php echo $siswa['jenis_kelamin']; ?></td>
-                        <td><?php echo $siswa['agama']; ?></td>
-                        <td><?php echo $siswa['alamat']; ?></td>
-                        <td><?php echo $siswa['email_orangtua']; ?></td>
-                        <td><?php echo $siswa['no_telpon']; ?></td>
-                        <td><?php echo $siswa['status_pendaftaran']; ?></td>
+                        <td><?= htmlspecialchars($siswa['id_siswa']); ?></td>
+                        <td><?= htmlspecialchars($siswa['nama']); ?></td>
+                        <td><?= htmlspecialchars($siswa['tanggal_lahir']); ?></td>
+                        <td><?= htmlspecialchars($siswa['jenis_kelamin']); ?></td>
+                        <td><?= htmlspecialchars($siswa['agama']); ?></td>
+                        <td><?= htmlspecialchars($siswa['alamat']); ?></td>
+                        <td><?= htmlspecialchars($siswa['email_orangtua']); ?></td>
+                        <td><?= htmlspecialchars($siswa['no_telpon']); ?></td>
+                        <td><?= htmlspecialchars($siswa['status_pendaftaran']); ?></td>
                         <td>
-                            <?php if ($siswa['status_pendaftaran'] == 'Belum Diverifikasi') { ?>
-                                <a href="./controller/verifikasi.php?id=<?php echo $siswa['id_siswa']; ?>&action=terima" class="btn btn-success btn-sm">Terima</a>
-                                <a href="./controller/verifikasi.php?id=<?php echo $siswa['id_siswa']; ?>&action=tolak" class="btn btn-danger btn-sm" onclick="return confirm('Anda yakin ingin menolak pendaftar ini?')">Tolak</a>
+                            <?php if ($siswa['status_pendaftaran'] == 'belum diterima') { ?>
+                                <a href="./admin_dashboard_control.php?id=<?= htmlspecialchars($siswa['id_siswa']); ?>&action=terima" class="btn btn-success btn-sm">Terima</a>
+                                <a href="./admin_dashboard_control.php?id=<?= htmlspecialchars($siswa['id_siswa']); ?>&action=tolak" class="btn btn-danger btn-sm" onclick="return confirm('Anda yakin ingin menolak pendaftar ini?')">Tolak</a>
                             <?php } else { ?>
                                 <span class="badge badge-success">Terverifikasi</span>
                             <?php } ?>

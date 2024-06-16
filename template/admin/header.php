@@ -54,6 +54,13 @@
                 </a>
             </li>
 
+            <li class="nav-item active">
+                <a class="nav-link" href="pembayaran.php">
+                    <i class="fas fa-fw fa-user-alt"></i>
+                    <span>Pembayaran</span>
+                </a>
+            </li>
+
             
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">

@@ -33,24 +33,24 @@ if (!$data_pendaftar) {
 //Logika Status Pembayaran
 if (mysqli_num_rows($result_pendaftaran) > 0) {
     // Ambil data pendaftar dari hasil query sebelumnya
-    $id_pendaftaran = $data_pendaftar['id_siswa'];
+    $id_siswa = $data_pendaftar['id_siswa'];
 
     // Query untuk mendapatkan data pembayaran
-    $sql_pembayaran = "SELECT * FROM pembayaran WHERE id_pembayaran = '$id_pendaftaran'";
+    $sql_pembayaran = "SELECT * FROM view_pembayaran WHERE id_siswa = '$id_siswa'";
     $result_bayar = mysqli_query($koneksi, $sql_pembayaran);
 
     // Periksa apakah query berhasil dijalankan
     if ($result_bayar === false) {
-        die("Error pada query pembayaran: " . mysqli_error($koneksi));
+        die("Error pada query siswa: " . mysqli_error($koneksi));
     }
 
     if (mysqli_num_rows($result_bayar) > 0) {
         $data_bayar = mysqli_fetch_array($result_bayar);
         $status = $data_bayar['status_pendaftaran'];
         // Lakukan sesuatu dengan $status
-        $_SESSION['sudah_bayar'] = "Selamat Anak Anda Diterima";
+        $_SESSION['diterima'] = "Selamat Anak Anda Diterima";
     } else {
-        $_SESSION['belum_bayar'] = "Silahkan mengisi data diri anak dan lakukan pembayaran";
+        $_SESSION['belum diterima'] = "Silahkan mengisi data diri anak dan lakukan pembayaran";
     }
 } else {
     echo "Tidak ada data pendaftar ditemukan.";
@@ -70,8 +70,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btn_bayar'])) {
         move_uploaded_file($file_tmp, "../assets/pembayaran/" . $file_name);
 
         // Masukkan data pembayaran ke dalam tabel pembayaran
-        $sql_pembayaran = "INSERT INTO pembayaran (id_siswa, status_pendaftaran, tanggal_bayar, jumlah_bayar, bukti_pembayaran)
-                           VALUES ('$id_user', 'Belum Diverifikasi', '$tanggal_bayar', '$jumlah_bayar', '$file_name')";
+        $sql_pembayaran = "INSERT INTO transaksi (id_siswa, tanggal_bayar, jumlah_bayar, bukti_pembayaran)
+                           VALUES ('$id_user', '$tanggal_bayar', '$jumlah_bayar', '$file_name')";
 
         $result_pembayaran = mysqli_query($koneksi, $sql_pembayaran);
 

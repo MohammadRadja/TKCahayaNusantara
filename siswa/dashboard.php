@@ -19,15 +19,15 @@
         </div>
     </div>
     <?php
-    if (isset($_SESSION['belum_bayar'])) { ?>
+    if (isset($_SESSION['belum diterima'])) { ?>
         <div class="container">
             <div class="alert alert-danger">
-                <h1 class="display-4"><?= $_SESSION['belum_bayar'] ?></h1>
+                <h1 class="display-4"><?= $_SESSION['belum diterima'] ?></h1>
                 <p class="lead"></p>
             </div>
         </div>
     <?php }  
-    if (isset($_SESSION['sudah_bayar'])) { ?>
+    if (isset($_SESSION['diterima'])) { ?>
     <div class="container">
         <div class="alert alert-success">
             <h1 class="display-4">Selamat Anak Anda Di Terima</h1>
