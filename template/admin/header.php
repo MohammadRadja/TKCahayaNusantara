@@ -50,17 +50,11 @@
             <li class="nav-item active">
                 <a class="nav-link" href="pendaftar.php">
                     <i class="fas fa-fw fa-user-alt"></i>
-                    <span>Pendaftar</span></a>
+                    <span>Pendaftar</span>
+                </a>
             </li>
+
             
-            <li class="nav-item active">
-                <a class="nav-link" href="pembayaran.php">
-                    <i class="fas fa-fw fa-file-invoice"></i>
-                    <span>Pembayaran</span></a>
-            </li>
-
-
-
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
 

@@ -1,6 +1,13 @@
-<?php include('../db/auto_load.php'); ?>
-<?php include('./controller/pendaftar_dashboard_control.php') ?>
-<?php include('../template/admin/header.php'); ?>
+<?php
+// Memuat file auto_load.php untuk koneksi ke database
+include('../db/auto_load.php');
+
+// Memuat file controller untuk logika verifikasi
+include('./controller/admin_dashboard_control.php');
+
+// Memuat header admin
+include('../template/admin/header.php');
+?>
 
 <!-- Begin Page Content -->
 <div class="container-fluid">
@@ -12,7 +19,7 @@
 
     <!-- Tabel Data Siswa -->
     <div class="container">
-        <h1>Data Siswa</h1>
+        <h1>Data Pendaftar</h1>
         <table class="table table-bordered">
             <thead>
                 <tr>
@@ -25,6 +32,7 @@
                     <th>Email Orang Tua</th>
                     <th>No Telp Orang Tua</th>
                     <th>Status Pendaftaran</th>
+                    <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -39,6 +47,14 @@
                         <td><?php echo $siswa['email_orangtua']; ?></td>
                         <td><?php echo $siswa['no_telpon']; ?></td>
                         <td><?php echo $siswa['status_pendaftaran']; ?></td>
+                        <td>
+                            <?php if ($siswa['status_pendaftaran'] == 'Belum Diverifikasi') { ?>
+                                <a href="./controller/verifikasi.php?id=<?php echo $siswa['id_siswa']; ?>&action=terima" class="btn btn-success btn-sm">Terima</a>
+                                <a href="./controller/verifikasi.php?id=<?php echo $siswa['id_siswa']; ?>&action=tolak" class="btn btn-danger btn-sm" onclick="return confirm('Anda yakin ingin menolak pendaftar ini?')">Tolak</a>
+                            <?php } else { ?>
+                                <span class="badge badge-success">Terverifikasi</span>
+                            <?php } ?>
+                        </td>
                     </tr>
                 <?php } ?>
             </tbody>

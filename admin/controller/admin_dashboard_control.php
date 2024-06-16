@@ -21,6 +21,7 @@ if ($result_siswa === false) {
     die("Error pada query siswa: " . mysqli_error($koneksi));
 }
 
+//Logika Data Siswa
 $data_siswa = [];
 while ($row = mysqli_fetch_array($result_siswa)) {
     $id_siswa = $row['id_siswa'];
@@ -53,6 +54,44 @@ while ($row = mysqli_fetch_array($result_siswa)) {
         'status_pendaftaran' => $status_pendaftaran
     ];
 }
+
+
+// Logika Verifikasi Pembayaran 
+if (isset($_GET['id']) && is_numeric($_GET['id'])) {
+    $id_siswa = $_GET['id'];
+    $action = $_GET['action'] ?? '';
+
+    if ($action == 'terima') {
+        // Query untuk mengubah status pendaftaran menjadi "Diterima"
+        $sql_update = "UPDATE pembayaran SET status_pendaftaran = 'Sudah Diverifikasi' WHERE id_siswa = '$id_siswa'";
+    } elseif ($action == 'tolak') {
+        // Query untuk mengubah status pendaftaran menjadi "Ditolak"
+        $sql_update = "UPDATE pembayaran SET status_pendaftaran = 'Ditolak' WHERE id_siswa = '$id_siswa'";
+    } else {
+        $_SESSION['verifikasi_error'] = "Aksi tidak valid.";
+        header('location:./pendaftar.php');
+        exit;
+    }
+
+    // Eksekusi query
+    $result_update = mysqli_query($koneksi, $sql_update);
+
+    // Periksa apakah update berhasil
+    if ($result_update) {
+        $_SESSION['verifikasi_success'] = "Pendaftar berhasil di" . ($action == 'terima' ? 'terima' : 'tolak');
+        header('location:./admin/pendaftar.php');
+        exit;
+    } else {
+        $_SESSION['verifikasi_error'] = "Gagal memproses verifikasi: " . mysqli_error($koneksi);
+        header('location:./admin/pendaftar.php');
+        exit;
+    }
+} else {
+    $_SESSION['verifikasi_error'] = "ID pendaftar tidak valid.";
+    header('location:./pendaftar.php');
+    exit;
+}
+
 
 // Tutup koneksi
 mysqli_close($koneksi);

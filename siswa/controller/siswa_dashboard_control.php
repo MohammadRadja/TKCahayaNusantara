@@ -29,7 +29,66 @@ if (!$data_pendaftar) {
     die("Data siswa tidak ditemukan.");
 }
 
-// Tangkap data dari formulir yang di-submit
+
+//Logika Status Pembayaran
+if (mysqli_num_rows($result_pendaftaran) > 0) {
+    // Ambil data pendaftar dari hasil query sebelumnya
+    $id_pendaftaran = $data_pendaftar['id_siswa'];
+
+    // Query untuk mendapatkan data pembayaran
+    $sql_pembayaran = "SELECT * FROM pembayaran WHERE id_pembayaran = '$id_pendaftaran'";
+    $result_bayar = mysqli_query($koneksi, $sql_pembayaran);
+
+    // Periksa apakah query berhasil dijalankan
+    if ($result_bayar === false) {
+        die("Error pada query pembayaran: " . mysqli_error($koneksi));
+    }
+
+    if (mysqli_num_rows($result_bayar) > 0) {
+        $data_bayar = mysqli_fetch_array($result_bayar);
+        $status = $data_bayar['status_pendaftaran'];
+        // Lakukan sesuatu dengan $status
+        $_SESSION['sudah_bayar'] = "Selamat Anak Anda Diterima";
+    } else {
+        $_SESSION['belum_bayar'] = "Silahkan mengisi data diri anak dan lakukan pembayaran";
+    }
+} else {
+    echo "Tidak ada data pendaftar ditemukan.";
+}
+
+// Logika Pembayaran
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btn_bayar'])) {
+    $jumlah_bayar = $_POST['jumlah_bayar'];
+    $tanggal_bayar = date("Y-m-d H:i:s");
+
+    // Proses unggah bukti pembayaran jika ada
+    if (!empty($_FILES['bukti_pembayaran']['name'])) {
+        $file_name = $_FILES['bukti_pembayaran']['name'];
+        $file_tmp = $_FILES['bukti_pembayaran']['tmp_name'];
+
+        // Pindahkan file yang diunggah ke direktori upload
+        move_uploaded_file($file_tmp, "../assets/pembayaran/" . $file_name);
+
+        // Masukkan data pembayaran ke dalam tabel pembayaran
+        $sql_pembayaran = "INSERT INTO pembayaran (id_siswa, status_pendaftaran, tanggal_bayar, jumlah_bayar, bukti_pembayaran)
+                           VALUES ('$id_user', 'Belum Diverifikasi', '$tanggal_bayar', '$jumlah_bayar', '$file_name')";
+
+        $result_pembayaran = mysqli_query($koneksi, $sql_pembayaran);
+
+        if ($result_pembayaran) {
+            $_SESSION['payment_success'] = "Pembayaran berhasil dilakukan dan sedang menunggu verifikasi.";
+        } else {
+            $_SESSION['payment_error'] = "Error: " . mysqli_error($koneksi);
+        }
+    } else {
+        $_SESSION['payment_error'] = "Bukti pembayaran tidak diunggah.";
+    }
+
+    header('location: ../siswa/dashboard.php');
+    exit;
+}
+
+//Logika Edit Data Profil
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Tangkap semua data POST di sini
     $nama = $_POST['nama'];
@@ -90,36 +149,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 } else {
     $_SESSION['update_profile_error'] = "Error: " . mysqli_error($koneksi);
 }
-
-    // Redirect kembali ke halaman dashboard setelah update
-    // header('location: ../siswa/profil.php');
-    // exit;
-}
-
-//Logika Status Pembayaran
-if (mysqli_num_rows($result_pendaftaran) > 0) {
-    // Ambil data pendaftar dari hasil query sebelumnya
-    $id_pendaftaran = $data_pendaftar['id_siswa'];
-
-    // Query untuk mendapatkan data pembayaran
-    $sql_pembayaran = "SELECT * FROM pembayaran WHERE id_pembayaran = '$id_pendaftaran'";
-    $result_bayar = mysqli_query($koneksi, $sql_pembayaran);
-
-    // Periksa apakah query berhasil dijalankan
-    if ($result_bayar === false) {
-        die("Error pada query pembayaran: " . mysqli_error($koneksi));
-    }
-
-    if (mysqli_num_rows($result_bayar) > 0) {
-        $data_bayar = mysqli_fetch_array($result_bayar);
-        $status = $data_bayar['status_pendaftaran'];
-        // Lakukan sesuatu dengan $status
-        $_SESSION['sudah_bayar'] = "Selamat Anak Anda Diterima";
-    } else {
-        $_SESSION['belum_bayar'] = "Silahkan mengisi data diri anak dan lakukan pembayaran";
-    }
-} else {
-    echo "Tidak ada data pendaftar ditemukan.";
 }
 
 // Tutup koneksi
