@@ -1,0 +1,18 @@
+CREATE VIEW view_pembayaran AS
+SELECT
+    s.id_siswa,
+    s.nama,
+    s.tanggal_lahir,
+    s.jenis_kelamin,
+    s.agama,
+    s.alamat,
+    s.email_orangtua,
+    s.no_telpon,
+    p.tanggal_bayar,
+    p.jumlah_bayar,
+    p.bukti_pembayaran,
+    s.status_pendaftaran
+FROM
+    siswa s
+LEFT JOIN
+    pembayaran p ON s.id_siswa = p.id_siswa;

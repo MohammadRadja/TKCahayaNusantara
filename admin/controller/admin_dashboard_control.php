@@ -1,15 +1,16 @@
 <?php
 // Memuat file auto_load.php untuk koneksi ke database
-// include('../db/auto_load.php');
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 
-// if (session_status() == PHP_SESSION_NONE) {
-//     session_start();
-// }
+if (!isset($_SESSION['status']) || $_SESSION['status'] != 'login' || $_SESSION['level'] != 'admin') {
+    header('location:../login.php');
+    exit;
+}
 
-// if (!isset($_SESSION['status']) || $_SESSION['status'] != 'login' || $_SESSION['level'] != 'admin') {
-//     header('location:../login.php');
-//     exit;
-// }
+// Initialize array to store payment data
+$data_pembayaran = [];
 
 // Query untuk mendapatkan data semua siswa
 $sql_pembayaran = "SELECT * FROM view_pembayaran";
@@ -67,16 +68,18 @@ if (isset($_GET['id_siswa']) && is_numeric($_GET['id_siswa'])) {
     $id_siswa = $_GET['id_siswa'];
     $action = $_GET['action'] ?? '';
 
-    if ($action == 'terima') {
-        // Query to update status to "Sudah Diverifikasi"
-        $sql_update = "UPDATE view_pembayaran SET status_pendaftaran = 'diterima' WHERE id_siswa = '$id_siswa'";
-    } elseif ($action == 'tolak') {
-        // Query to update status to "Ditolak"
-        $sql_update = "UPDATE view_pembayaran SET status_pendaftaran = 'Ditolak' WHERE id_siswa = '$id_siswa'";
-    } else {
-        $_SESSION['verifikasi_error'] = "Invalid action.";
-        header('location:./pendaftar.php');
-        exit;
+    // Prepare SQL statement based on action
+    switch ($action) {
+        case 'terima':
+            $sql_update = "UPDATE view_pembayaran SET status_pendaftaran = 'diterima' WHERE id_siswa = '$id_siswa'";
+            break;
+        case 'tolak':
+            $sql_update = "UPDATE view_pembayaran SET status_pendaftaran = 'belum diterima' WHERE id_siswa = '$id_siswa'";
+            break;
+        default:
+            $_SESSION['verifikasi_error'] = "Invalid action.";
+            header('location:./pembayaran.php');
+            exit;
     }
 
     // Execute update query
@@ -84,19 +87,17 @@ if (isset($_GET['id_siswa']) && is_numeric($_GET['id_siswa'])) {
 
     // Check if update was successful
     if ($result_update) {
-        $_SESSION['verifikasi_success'] = "Pendaftar successfully " . ($action == 'diterima' ? 'accepted' : 'rejected');
-        header('location:./pendaftar.php');
-        exit;
+        $action_text = ($action == 'terima') ? 'accepted' : 'rejected';
+        $_SESSION['verifikasi_success'] = "Pendaftar successfully " . $action_text;
     } else {
         $_SESSION['verifikasi_error'] = "Failed to process verification: " . mysqli_error($koneksi);
-        header('location:./pendaftar.php');
-        exit;
     }
-} else {
-    // $_SESSION['verifikasi_error'] = "Invalid student ID.";
-    // header('location:./pendaftar.php');
-    // exit;
+
+    // Redirect back to payment verification page
+    header('location:./pembayaran.php');
+    exit;
 }
+
 
 // Close database connection
 mysqli_close($koneksi);

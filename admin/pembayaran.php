@@ -49,15 +49,15 @@ include('../template/admin/header.php');
                         <td><?= htmlspecialchars($pembayaran['email_orangtua']); ?></td>
                         <td><?= htmlspecialchars($pembayaran['no_telpon']); ?></td>
                         <td><?= htmlspecialchars($pembayaran['tanggal_bayar']); ?></td>
-                        <td><?= htmlspecialchars($pembayaran['jumlah_bayar']); ?></td>
+                        <td>Rp<?= number_format($pembayaran['jumlah_bayar'], 0, ',', '.'); ?></td>
                         <td><?= htmlspecialchars($pembayaran['status_pendaftaran']); ?></td>
                         <td>
-                            <?php if ($pembayaran['status_pendaftaran'] == 'belum diterima') { ?>
+                            <?php if ($pembayaran['status_pendaftaran'] == 'belum diterima'): ?>
                                 <a href="./admin_dashboard_control.php?id=<?= htmlspecialchars($pembayaran['id_siswa']); ?>&action=terima" class="btn btn-success btn-sm">Terima</a>
                                 <a href="./admin_dashboard_control.php?id=<?= htmlspecialchars($pembayaran['id_siswa']); ?>&action=tolak" class="btn btn-danger btn-sm" onclick="return confirm('Anda yakin ingin menolak pendaftar ini?')">Tolak</a>
-                            <?php } else { ?>
+                            <?php else: ?>
                                 <span class="badge badge-success">Terverifikasi</span>
-                            <?php } ?>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 <?php } ?>
