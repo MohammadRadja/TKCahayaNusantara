@@ -1,5 +1,5 @@
 <?php
-// Memuat file auto_load.php untuk koneksi ke database
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
@@ -9,10 +9,31 @@ if (!isset($_SESSION['status']) || $_SESSION['status'] != 'login' || $_SESSION['
     exit;
 }
 
-// Initialize array to store payment data
+// Query untuk mendapatkan data pendaftar
+$sql_pendaftar = "SELECT * FROM siswa";
+$result_pendaftaran = mysqli_query($koneksi, $sql_pendaftar);
+
+// Periksa apakah query berhasil dijalankan
+if ($result_pendaftaran === false) {
+    die("Error pada query pendaftar: " . mysqli_error($koneksi));
+}
+
+// Ambil data siswa dan pastikan ada data yang ditemukan
+$data_pendaftar = [];
+while ($row = mysqli_fetch_array($result_pendaftaran, MYSQLI_ASSOC)) {
+    $data_pendaftar[] = $row;
+}
+
+// Pastikan ada data yang ditemukan
+if (count($data_pendaftar) === 0) {
+    die("Data siswa tidak ditemukan.");
+}
+
+
+// Inisialisasi Array Pembayaran
 $data_pembayaran = [];
 
-// Query untuk mendapatkan data semua siswa
+// Query untuk mendapatkan data semua pembayaran
 $sql_pembayaran = "SELECT * FROM view_pembayaran";
 $result_pembayaran = mysqli_query($koneksi, $sql_pembayaran);
 
@@ -64,7 +85,7 @@ while ($row = mysqli_fetch_array($result_pembayaran)) {
 }
 
 //Logika Verif Pembayaran
-if (isset($_GET['id_siswa']) && is_numeric($_GET['id_siswa'])) {
+if (isset($_GET['id_siswa']) && is_numeric($_GET['id_siswa']) && isset($_GET['action'])) {
     $id_siswa = $_GET['id_siswa'];
     $action = $_GET['action'] ?? '';
 
@@ -77,7 +98,7 @@ if (isset($_GET['id_siswa']) && is_numeric($_GET['id_siswa'])) {
             $sql_update = "UPDATE view_pembayaran SET status_pendaftaran = 'belum diterima' WHERE id_siswa = '$id_siswa'";
             break;
         default:
-            $_SESSION['verifikasi_error'] = "Invalid action.";
+            $_SESSION['verifikasi_error'] = "Failed to process verification: " . mysqli_error($koneksi);
             header('location:./pembayaran.php');
             exit;
     }

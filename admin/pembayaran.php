@@ -53,8 +53,8 @@ include('../template/admin/header.php');
                         <td><?= htmlspecialchars($pembayaran['status_pendaftaran']); ?></td>
                         <td>
                             <?php if ($pembayaran['status_pendaftaran'] == 'belum diterima'): ?>
-                                <a href="./admin_dashboard_control.php?id=<?= htmlspecialchars($pembayaran['id_siswa']); ?>&action=terima" class="btn btn-success btn-sm">Terima</a>
-                                <a href="./admin_dashboard_control.php?id=<?= htmlspecialchars($pembayaran['id_siswa']); ?>&action=tolak" class="btn btn-danger btn-sm" onclick="return confirm('Anda yakin ingin menolak pendaftar ini?')">Tolak</a>
+                                <a href="../admin/controller/admin_dashboard_control.php?id=<?= htmlspecialchars($pembayaran['id_siswa']); ?>&action=terima" class="btn btn-success btn-sm">Terima</a>
+                                <a href="../admin/controller/admin_dashboard_control.php?id=<?= htmlspecialchars($pembayaran['id_siswa']); ?>&action=tolak" class="btn btn-danger btn-sm" onclick="return confirm('Anda yakin ingin menolak pendaftar ini?')">Tolak</a>
                             <?php else: ?>
                                 <span class="badge badge-success">Terverifikasi</span>
                             <?php endif; ?>

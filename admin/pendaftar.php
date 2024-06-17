@@ -31,32 +31,19 @@ include('../template/admin/header.php');
                     <th>Alamat</th>
                     <th>Email Orang Tua</th>
                     <th>No Telp Orang Tua</th>
-                    <th>Tanggal Bayar</th>
-                    <th>Jumlah Bayar</th>
-                    <th>Status Pendaftaran</th>
-                    <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($data_siswa as $siswa) { ?>
+            <?php foreach ($data_pendaftar as $pendaftar) { ?>
                     <tr>
-                        <td><?= htmlspecialchars($siswa['id_siswa']); ?></td>
-                        <td><?= htmlspecialchars($siswa['nama']); ?></td>
-                        <td><?= htmlspecialchars($siswa['tanggal_lahir']); ?></td>
-                        <td><?= htmlspecialchars($siswa['jenis_kelamin']); ?></td>
-                        <td><?= htmlspecialchars($siswa['agama']); ?></td>
-                        <td><?= htmlspecialchars($siswa['alamat']); ?></td>
-                        <td><?= htmlspecialchars($siswa['email_orangtua']); ?></td>
-                        <td><?= htmlspecialchars($siswa['no_telpon']); ?></td>
-                        <td><?= htmlspecialchars($siswa['status_pendaftaran']); ?></td>
-                        <td>
-                            <?php if ($siswa['status_pendaftaran'] == 'belum diterima') { ?>
-                                <a href="./admin_dashboard_control.php?id=<?= htmlspecialchars($siswa['id_siswa']); ?>&action=terima" class="btn btn-success btn-sm">Terima</a>
-                                <a href="./admin_dashboard_control.php?id=<?= htmlspecialchars($siswa['id_siswa']); ?>&action=tolak" class="btn btn-danger btn-sm" onclick="return confirm('Anda yakin ingin menolak pendaftar ini?')">Tolak</a>
-                            <?php } else { ?>
-                                <span class="badge badge-success">Terverifikasi</span>
-                            <?php } ?>
-                        </td>
+                        <td><?= htmlspecialchars($pendaftar['id_siswa']); ?></td>
+                        <td><?= htmlspecialchars($pendaftar['nama']); ?></td>
+                        <td><?= htmlspecialchars($pendaftar['tanggal_lahir']); ?></td>
+                        <td><?= htmlspecialchars($pendaftar['jenis_kelamin']); ?></td>
+                        <td><?= htmlspecialchars($pendaftar['agama']); ?></td>
+                        <td><?= htmlspecialchars($pendaftar['alamat']); ?></td>
+                        <td><?= htmlspecialchars($pendaftar['email_orangtua']); ?></td>
+                        <td><?= htmlspecialchars($pendaftar['no_telpon']); ?></td>
                     </tr>
                 <?php } ?>
             </tbody>
