@@ -1,5 +1,4 @@
 <?php
-
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
@@ -7,6 +6,19 @@ if (session_status() == PHP_SESSION_NONE) {
 if (!isset($_SESSION['status']) || $_SESSION['status'] != 'login' || $_SESSION['level'] != 'admin') {
     header('location:../login.php');
     exit;
+}
+
+$host = 'localhost';
+$user = 'root';
+$password = '';
+$database = 'tkcahayanusantara';
+
+// Membuat koneksi ke database
+$koneksi = mysqli_connect($host, $user, $password, $database);
+
+// Periksa apakah koneksi berhasil
+if (mysqli_connect_errno()) {
+    die("Koneksi database gagal: " . mysqli_connect_error());
 }
 
 // Query untuk mendapatkan data pendaftar
@@ -49,64 +61,53 @@ if ($result_pembayaran) {
 }
 
 // Loop untuk mengambil data siswa dan status pendaftaran
-while ($row = mysqli_fetch_array($result_pembayaran)) {
-    $id_siswa = $row['id_siswa'];
+foreach ($data_pembayaran as &$pembayaran) {
+    $id_siswa = $pembayaran['id_siswa'];
 
     // Query untuk mendapatkan status pendaftaran siswa
-    $sql_pembayaran = "SELECT status_pendaftaran FROM view_pembayaran WHERE id_siswa = '$id_siswa'";
-    $result_pembayaran = mysqli_query($koneksi, $sql_pembayaran);
+    $sql_status_pendaftaran = "SELECT status_pendaftaran FROM view_pembayaran WHERE id_siswa = '$id_siswa'";
+    $result_status_pendaftaran = mysqli_query($koneksi, $sql_status_pendaftaran);
 
-    if ($result_pembayaran === false) {
+    if ($result_status_pendaftaran === false) {
         die("Error pada query pembayaran: " . mysqli_error($koneksi));
     }
 
     // Dapatkan status pendaftaran
-    if (mysqli_num_rows($result_pembayaran) > 0) {
-        $data_pembayaran = mysqli_fetch_array($result_pembayaran);
-        $status_pendaftaran = $data_pembayaran['status_pendaftaran'];
+    if (mysqli_num_rows($result_status_pendaftaran) > 0) {
+        $data_status_pendaftaran = mysqli_fetch_array($result_status_pendaftaran);
+        $status_pendaftaran = $data_status_pendaftaran['status_pendaftaran'];
     } else {
         $status_pendaftaran = "Belum Bayar";
     }
 
     // Tambahkan data siswa ke dalam array $data_siswa
-    $data_pembayaran[] = [
-        'id_siswa' => $id_siswa,
-        'nama' => $row['nama'],
-        'tanggal_lahir' => $row['tanggal_lahir'],
-        'jenis_kelamin' => $row['jenis_kelamin'],
-        'agama' => $row['agama'],
-        'alamat' => $row['alamat'],
-        'email_orangtua' => $row['email_orangtua'],
-        'no_telpon' => $row['no_telpon'],
-        'tanggal_bayar' => $row['tanggal_bayar'],
-        'jumlah_bayar' => $row['jumlah_bayar'],
-        'status_pendaftaran' => $status_pendaftaran
-    ];
+    $pembayaran['status_pendaftaran'] = $status_pendaftaran;
 }
 
-//Logika Verif Pembayaran
-if (isset($_GET['id_siswa']) && is_numeric($_GET['id_siswa']) && isset($_GET['action'])) {
-    $id_siswa = $_GET['id_siswa'];
-    $action = $_GET['action'] ?? '';
 
-    // Prepare SQL statement based on action
+// Logika Verif Pembayaran
+if (isset($_GET['id']) && is_numeric($_GET['id']) && isset($_GET['action'])) {
+    $id_siswa = $_GET['id'];
+    $action = $_GET['action'];
+
     switch ($action) {
         case 'terima':
-            $sql_update = "UPDATE view_pembayaran SET status_pendaftaran = 'diterima' WHERE id_siswa = '$id_siswa'";
+            $sql_update = "UPDATE view_pembayaran SET status_pendaftaran = 'diterima' WHERE id_siswa = ?";
             break;
         case 'tolak':
-            $sql_update = "UPDATE view_pembayaran SET status_pendaftaran = 'belum diterima' WHERE id_siswa = '$id_siswa'";
+            $sql_update = "UPDATE view_pembayaran SET status_pendaftaran = 'belum diterima' WHERE id_siswa = ?";
             break;
         default:
-            $_SESSION['verifikasi_error'] = "Failed to process verification: " . mysqli_error($koneksi);
-            header('location:./pembayaran.php');
+            $_SESSION['verifikasi_error'] = "Aksi tidak valid.";
+            header('location: ./pembayaran.php');
             exit;
     }
 
-    // Execute update query
-    $result_update = mysqli_query($koneksi, $sql_update);
+    // Execute update query with prepared statement
+    $stmt = mysqli_prepare($koneksi, $sql_update);
+    mysqli_stmt_bind_param($stmt, 'i', $id_siswa);
+    $result_update = mysqli_stmt_execute($stmt);
 
-    // Check if update was successful
     if ($result_update) {
         $action_text = ($action == 'terima') ? 'accepted' : 'rejected';
         $_SESSION['verifikasi_success'] = "Pendaftar successfully " . $action_text;
@@ -115,10 +116,9 @@ if (isset($_GET['id_siswa']) && is_numeric($_GET['id_siswa']) && isset($_GET['ac
     }
 
     // Redirect back to payment verification page
-    header('location:./pembayaran.php');
+    header('location: ../pembayaran.php');
     exit;
 }
-
 
 // Close database connection
 mysqli_close($koneksi);
