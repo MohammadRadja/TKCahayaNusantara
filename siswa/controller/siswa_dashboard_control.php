@@ -35,21 +35,26 @@ if (mysqli_num_rows($result_pendaftaran) > 0) {
     $id_siswa = $data_pendaftar['id_siswa'];
 
     // Query untuk mendapatkan data pembayaran
-    $sql_pembayaran = "SELECT * FROM view_pembayaran WHERE id_siswa = '$id_siswa'";
-    $result_bayar = mysqli_query($koneksi, $sql_pembayaran);
+    $sql_pembayaran = "SELECT * FROM view_pembayaran WHERE id_siswa = ?";
+    $stmt_pembayaran = $koneksi->prepare($sql_pembayaran);
+    $stmt_pembayaran->bind_param("i", $id_siswa);
+    $stmt_pembayaran->execute();
+    $result_bayar = $stmt_pembayaran->get_result();
+
 
     // Periksa apakah query berhasil dijalankan
-    if ($result_bayar === false) {
-        die("Error pada query siswa: " . mysqli_error($koneksi));
+    if (!$result_bayar) {
+        die("Error pada query pembayaran: " . $stmt_pembayaran->error);
     }
 
-    if (mysqli_num_rows($result_bayar) > 0) {
-        $data_bayar = mysqli_fetch_array($result_bayar);
+    if ($result_bayar->num_rows > 0) {
+        $data_bayar = $result_bayar->fetch_array(MYSQLI_ASSOC);
         $status = $data_bayar['status_pendaftaran'];
+        
         // Lakukan sesuatu dengan $status
-        $_SESSION['diterima'] = "Selamat Anak Anda Diterima";
+        $_SESSION['diterima'] = "Selamat, anak Anda telah diterima.";
     } else {
-        $_SESSION['belum_diterima'] = "Silahkan mengisi data diri anak dan lakukan pembayaran";
+        $_SESSION['belum_diterima'] = "Silakan lengkapi data diri anak dan lakukan pembayaran.";
     }
 } else {
     echo "Tidak ada data pendaftar ditemukan.";
@@ -101,11 +106,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btn_update_profile']))
     $status = $_POST['status_pendaftaran'] ?? '';
     $foto = $_POST['foto_profil'] ?? '';
 
+    // Batas ukuran file dalam bytes (misalnya 2MB)
+     $max_file_size = 2 * 1024 * 1024;
+
+     // Tipe file yang diizinkan
+    $allowed_file_types = ['image/jpeg', 'image/png', 'image/gif'];
+
+
     // Proses unggah foto profil jika ada
     if (!empty($_FILES['profil']['name'])) {
         $file_name = $_FILES['profil']['name'];
         $file_tmp = $_FILES['profil']['tmp_name'];
         $upload_dir = "../assets/profil/";
+
+        // Validasi ukuran file
+        if ($file_size > $max_file_size) {
+            $_SESSION['update_profile_error'] = "Ukuran file terlalu besar. Maksimum ukuran file adalah 2MB.";
+            header('location: ../siswa/profil.php');
+            exit;
+        }
+
+        // Validasi tipe file
+        if (!in_array($file_type, $allowed_file_types)) {
+            $_SESSION['update_profile_error'] = "Tipe file tidak valid. Hanya diperbolehkan mengunggah file gambar (jpeg, png, gif).";
+            header('location: ../siswa/profil.php');
+            exit;
+        }
 
         // Pastikan direktori upload ada dan dapat ditulisi
         if (!is_dir($upload_dir) || !is_writable($upload_dir)) {

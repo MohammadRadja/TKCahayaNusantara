@@ -8,7 +8,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
-    <title>Tk Cahaya Nusantara</title>
+    <link rel="icon" type="image/png" href="assets/img/logo.png">
+    <title>TK Cahaya Nusantara</title>
     <style>
         .jumbotron {
             position: relative;

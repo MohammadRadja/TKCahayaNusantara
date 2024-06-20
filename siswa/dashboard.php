@@ -19,24 +19,26 @@
         </div>
     </div>
     <?php
-    if (isset($_SESSION['belum diterima'])) { ?>
+
+    if (isset($_SESSION['belum_diterima'])) { ?>
         <div class="container">
             <div class="alert alert-danger">
-                <h1 class="display-4"><?= $_SESSION['belum diterima'] ?></h1>
+                <h1 class="display-4"><?= $_SESSION['belum_diterima'] ?></h1>
                 <p class="lead"></p>
             </div>
         </div>
+        <?php unset($_SESSION['belum_diterima']); // Hapus session setelah digunakan ?>
     <?php }  
     if (isset($_SESSION['diterima'])) { ?>
-    <div class="container">
-        <div class="alert alert-success">
-            <h1 class="display-4">Selamat Anak Anda Di Terima</h1>
-            <p class="lead">Silahkan menghubungi kontak</p>
+        <div class="container">
+            <div class="alert alert-success">
+                <h1 class="display-4"><?= $_SESSION['diterima'] ?></h1>
+                <p class="lead">Silahkan menghubungi kontak</p>
+            </div>
         </div>
-    </div>
+        <?php unset($_SESSION['diterima']); // Hapus session setelah digunakan ?>
     <?php }
-
-    ?>
+?>
     <!-- <div class="container">
         <div class="alert alert-success">
             <h1 class="display-4">Selamat Anak Anda Di Terima</h1>
