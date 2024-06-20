@@ -98,6 +98,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btn_update_profile']))
     $alamat = $_POST['alamat'] ?? '';
     $email_orang_tua = $_POST['email'] ?? '';
     $no_telp_orang_tua = $_POST['noTlp'] ?? '';
+    $status = $_POST['status_pendaftaran'] ?? '';
     $foto = $_POST['foto_profil'] ?? '';
 
     // Proses unggah foto profil jika ada
