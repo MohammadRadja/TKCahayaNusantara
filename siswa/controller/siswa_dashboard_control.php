@@ -87,6 +87,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btn_bayar'])) {
     exit;
 }
 
+
 // Logika Edit Data Profil
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btn_update_profile'])) {
     // Tangkap semua data POST di sini
@@ -97,6 +98,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btn_update_profile']))
     $alamat = $_POST['alamat'] ?? '';
     $email_orang_tua = $_POST['email'] ?? '';
     $no_telp_orang_tua = $_POST['noTlp'] ?? '';
+    $foto = $_POST['foto_profil'] ?? '';
 
     // Proses unggah foto profil jika ada
     if (!empty($_FILES['profil']['name'])) {
@@ -124,7 +126,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btn_update_profile']))
                             WHERE id_siswa = ?";
             $stmt = $koneksi->prepare($sql_update);
             $stmt->bind_param("ssssssssi", $nama, $tanggal_lahir, $jenis_kelamin, $agama, $alamat, $email_orang_tua, $no_telp_orang_tua, $file_name, $id_user);
-            log_message('Prepared statement for profile update including photo.');
         } else {
             die("Gagal mengunggah file.");
         }
@@ -141,7 +142,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btn_update_profile']))
                         WHERE id_siswa = ?";
         $stmt = $koneksi->prepare($sql_update);
         $stmt->bind_param("sssssssi", $nama, $tanggal_lahir, $alamat, $agama, $jenis_kelamin, $email_orang_tua, $no_telp_orang_tua, $id_user);
-        log_message('Prepared statement for profile update without photo.');
     }
 
     // Lakukan query untuk melakukan update
@@ -159,11 +159,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btn_update_profile']))
             $data_pendaftar = $result_pendaftaran->fetch_array(MYSQLI_ASSOC);
             // Simpan data terbaru ke dalam sesi agar dapat ditampilkan setelah redirect
             $_SESSION['data_terbaru'] = $data_pendaftar;
-            log_message('New profile data fetched and stored in session.');
 
         }
     } else {
-        log_message('Profile update query failed: ' . $stmt->error);
         $_SESSION['update_profile_error'] = "Error: " . $stmt->error;
     }
 }
