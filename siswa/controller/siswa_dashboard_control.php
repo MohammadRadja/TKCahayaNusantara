@@ -29,8 +29,7 @@ if (!$data_pendaftar) {
     die("Data siswa tidak ditemukan.");
 }
 
-
-//Logika Status Pembayaran
+// Logika Status Pembayaran
 if (mysqli_num_rows($result_pendaftaran) > 0) {
     // Ambil data pendaftar dari hasil query sebelumnya
     $id_siswa = $data_pendaftar['id_siswa'];
@@ -50,7 +49,7 @@ if (mysqli_num_rows($result_pendaftaran) > 0) {
         // Lakukan sesuatu dengan $status
         $_SESSION['diterima'] = "Selamat Anak Anda Diterima";
     } else {
-        $_SESSION['belum diterima'] = "Silahkan mengisi data diri anak dan lakukan pembayaran";
+        $_SESSION['belum_diterima'] = "Silahkan mengisi data diri anak dan lakukan pembayaran";
     }
 } else {
     echo "Tidak ada data pendaftar ditemukan.";
@@ -88,67 +87,85 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btn_bayar'])) {
     exit;
 }
 
-//Logika Edit Data Profil
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+// Logika Edit Data Profil
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btn_update_profile'])) {
     // Tangkap semua data POST di sini
-    $nama = $_POST['nama'];
-    $tanggal_lahir = $_POST['tglLahir'];
-    $jenis_kelamin = $_POST['gender'];
-    $agama = $_POST['agama'];
-    $alamat = $_POST['alamat'];
-    $email_orang_tua = $_POST['email'];
-    $no_telp_orang_tua = $_POST['noTlp'];
+    $nama = $_POST['nama'] ?? '';
+    $tanggal_lahir = $_POST['tglLahir'] ?? '';
+    $jenis_kelamin = $_POST['gender'] ?? '';
+    $agama = $_POST['agama'] ?? '';
+    $alamat = $_POST['alamat'] ?? '';
+    $email_orang_tua = $_POST['email'] ?? '';
+    $no_telp_orang_tua = $_POST['noTlp'] ?? '';
 
     // Proses unggah foto profil jika ada
-    if (!empty($_FILES['gambar']['name'])) {
-        $file_name = $_FILES['gambar']['name'];
-        $file_tmp = $_FILES['gambar']['tmp_name'];
+    if (!empty($_FILES['profil']['name'])) {
+        $file_name = $_FILES['profil']['name'];
+        $file_tmp = $_FILES['profil']['tmp_name'];
+        $upload_dir = "../assets/profil/";
+
+        // Pastikan direktori upload ada dan dapat ditulisi
+        if (!is_dir($upload_dir) || !is_writable($upload_dir)) {
+            die("Direktori upload tidak ada atau tidak dapat ditulisi.");
+        }
 
         // Pindahkan file yang diunggah ke direktori upload
-        move_uploaded_file($file_tmp, "../upload/" . $file_name);
-
-        // Update data termasuk foto profil
-        $sql_update = "UPDATE siswa SET 
-                        nama = '$nama', 
-                        tanggal_lahir = '$tanggal_lahir', 
-                        jenis_kelamin = '$jenis_kelamin', 
-                        agama = '$agama', 
-                        alamat = '$alamat', 
-                        email_orangtua = '$email_orang_tua', 
-                        no_telpon = '$no_telp_orang_tua', 
-                        foto = '$file_name'
-                        WHERE id_siswa = '$id_user'";
+        if (move_uploaded_file($file_tmp, $upload_dir . $file_name)) {
+            // Update data termasuk foto profil
+            $sql_update = "UPDATE siswa SET 
+                            nama = ?, 
+                            tanggal_lahir = ?, 
+                            jenis_kelamin = ?, 
+                            agama = ?, 
+                            alamat = ?, 
+                            email_orangtua = ?, 
+                            no_telpon = ?, 
+                            foto_profil = ?
+                            WHERE id_siswa = ?";
+            $stmt = $koneksi->prepare($sql_update);
+            $stmt->bind_param("ssssssssi", $nama, $tanggal_lahir, $jenis_kelamin, $agama, $alamat, $email_orang_tua, $no_telp_orang_tua, $file_name, $id_user);
+            log_message('Prepared statement for profile update including photo.');
+        } else {
+            die("Gagal mengunggah file.");
+        }
     } else {
         // Update data tanpa mengubah foto profil
         $sql_update = "UPDATE siswa SET 
-                        nama = '$nama', 
-                        tanggal_lahir = '$tanggal_lahir', 
-                        alamat = '$alamat', 
-                        agama = '$agama', 
-                        jenis_kelamin = '$jenis_kelamin', 
-                        email_orangtua = '$email_orang_tua', 
-                        no_telpon = '$no_telp_orang_tua'
-                        WHERE id_siswa = '$id_user'";
+                        nama = ?, 
+                        tanggal_lahir = ?, 
+                        alamat = ?, 
+                        agama = ?, 
+                        jenis_kelamin = ?, 
+                        email_orangtua = ?, 
+                        no_telpon = ?
+                        WHERE id_siswa = ?";
+        $stmt = $koneksi->prepare($sql_update);
+        $stmt->bind_param("sssssssi", $nama, $tanggal_lahir, $alamat, $agama, $jenis_kelamin, $email_orang_tua, $no_telp_orang_tua, $id_user);
+        log_message('Prepared statement for profile update without photo.');
     }
 
     // Lakukan query untuk melakukan update
-    $result_update = mysqli_query($koneksi, $sql_update);
+    if ($stmt->execute()) {
+        $_SESSION['update_profile_success'] = "Profil berhasil diperbarui.";
 
-    // Periksa apakah query update berhasil dijalankan
-    if ($result_update) {
-    $_SESSION['update_profile_success'] = "Profil berhasil diperbarui.";
+        // Lakukan query untuk mendapatkan data terbaru
+        $sql_pendaftar = "SELECT * FROM siswa WHERE id_siswa = ?";
+        $stmt = $koneksi->prepare($sql_pendaftar);
+        $stmt->bind_param("i", $id_user);
+        $stmt->execute();
+        $result_pendaftaran = $stmt->get_result();
+        if ($result_pendaftaran->num_rows > 0) {
+            // Ambil data terbaru
+            $data_pendaftar = $result_pendaftaran->fetch_array(MYSQLI_ASSOC);
+            // Simpan data terbaru ke dalam sesi agar dapat ditampilkan setelah redirect
+            $_SESSION['data_terbaru'] = $data_pendaftar;
+            log_message('New profile data fetched and stored in session.');
 
-    // Lakukan query untuk mendapatkan data terbaru
-    $result_pendaftaran = mysqli_query($koneksi, $sql_pendaftar);
-    if ($result_pendaftaran) {
-        // Ambil data terbaru
-        $data_pendaftar = mysqli_fetch_array($result_pendaftaran);
-        // Simpan data terbaru ke dalam sesi agar dapat ditampilkan setelah redirect
-        $_SESSION['data_terbaru'] = $data_pendaftar;
+        }
+    } else {
+        log_message('Profile update query failed: ' . $stmt->error);
+        $_SESSION['update_profile_error'] = "Error: " . $stmt->error;
     }
-} else {
-    $_SESSION['update_profile_error'] = "Error: " . mysqli_error($koneksi);
-}
 }
 
 // Tutup koneksi

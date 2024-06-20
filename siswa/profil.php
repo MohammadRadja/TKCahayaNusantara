@@ -56,11 +56,11 @@ include('../siswa/controller/siswa_dashboard_control.php');
                                 </div>
                             </div>
                             <div class="col-md-4 text-center">
-                                <?php
-                                $foto = isset($data_pendaftar['foto']) ? '../upload/' . $data_pendaftar['foto'] : '../img/undraw_profile.svg';
+                            <?php
+                                $foto = isset($data_pendaftar['foto_profil']) ? '../assets/profil/' . $data_pendaftar['foto_profil'] : '../assets/profil/default.png';
                                 ?>
                                 <img src="<?= $foto ?>" class="img-fluid" alt="profile">
-                                <input type="file" name="gambar" class="form-control mt-2">
+                                <input type="file" name="profil" class="form-control mt-2">
                             </div>
                         </div>
                         <button type="submit" name="btn_simpan" value="simpan_profil" class="btn btn-primary">Edit</button>
