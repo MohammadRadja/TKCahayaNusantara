@@ -2,17 +2,17 @@
 
 <div class="jumbotron">
     <div class="container">
-        <h1 class="display-4">Selamat Datang di Sekolah TK CAHAYA NUSANTARA</h1>
-        <p class="lead">Kami berkomitmen untuk memberikan pendidikan terbaik bagi anak-anak Anda.</p>
+        <h1 data-aos="fade-down" data-aos-duration="2000" class="display-4">Selamat Datang di Sekolah TK CAHAYA NUSANTARA</h1>
+        <p data-aos="fade-left" data-aos-duration="2000" class="lead">Kami berkomitmen untuk memberikan pendidikan terbaik bagi anak-anak Anda.</p>
     </div>
 </div>
 
 <div class="container py-5">
     <div class="row py-3">
         <div class="col-lg-7 mb-4">
-            <h1>YAYASAN TK CAHAYA NUSANTARA</h1>
-            <h4>Menjadi Sekolah yang menyenangkan bagi siswa</h4>
-            <p>Awal berdirinya TK CAHAYA NUSANTARA, bermula dari berdirinya
+            <h1 data-aos="fade-down" data-aos-duration="2000">YAYASAN TK CAHAYA NUSANTARA</h1>
+            <h4 data-aos="fade-right" data-aos-duration="2000">Menjadi Sekolah yang menyenangkan bagi siswa</h4>
+            <p data-aos="fade-right" data-aos-duration="2000">Awal berdirinya TK CAHAYA NUSANTARA, bermula dari berdirinya
                 pada tanggal 18 Desember tahun 2006 berdiri dibawah yayasan CAHAYA
                 BUKIT SION, Pada tanggal 31 Januari Tahun 2022 Nama Yayasan Berubah
                 Menjadi Yayasan PENDIDIKAN ISLAMIC FAUZIA Dengan Akte Notaris
@@ -21,18 +21,18 @@
                 2014.
             </p>
                 
-            <a type="button" class="btn btn-dark" href="pendaftaran.php">Info PPDB</a> 
-            <a type="button" class="btn btn-outline-dark" href="profile.php">Profil Sekolah</a></p>
+            <a data-aos="fade-right" data-aos-duration="2000" type="button" class="btn btn-dark" href="pendaftaran.php">Info PPDB</a> 
+            <a data-aos="fade-right" data-aos-duration="2000" type="button" class="btn btn-outline-dark" href="profile.php">Profil Sekolah</a></p>
         </div>
         <div class="col-lg-5 mb-4">
-            <img src="assets/img/gradu.jpeg" class="d-block w-100 rounded" alt="gradu">
+            <img data-aos="fade-left" data-aos-duration="2000" src="assets/img/gradu.jpeg" class="d-block w-100 rounded" alt="gradu">
         </div>
     </div>
 </div>
-<section id="carousel">
+<section data-aos="fade-down" data-aos-duration="2000" id="carousel">
         <div class="container-fluid contain-event mb-5" >
           <div class="container contain-event-card">
-            <h4>FASILITAS</h4>
+            <h4 data-aos="fade-down" data-aos-duration="2000">FASILITAS</h4>
             <div class="bars-2"></div>
             <div class="swiper mySwiper">
               <div class="swiper-wrapper">
@@ -75,7 +75,7 @@
         </div>
       </section>
 <div class="py-2">
-    <div class="container text-center bg-success text-white py-5">
+    <div data-aos="fade-down" data-aos-duration="2000" class= "container text-center bg-success text-white py-5">
         <div class="fs-2 mb-3">Segera Daftar!</div>
         <p>Penerimaan Peserta Didik Baru (PPDB) Sekolah TK Cahaya Nusantara Tahun Pelajaran 2024-2025</p>
         <div class="pt-2">
@@ -83,7 +83,7 @@
         </div>
     </div>
 </div>
-<div class="container">
+<div class="container" data-aos="fade-down" data-aos-duration="2000">
 <h2 class="text-center m-4">ALAMAT</h2>
     <div class="row">
         <div class="col-lg-6 mb-4">

@@ -1,4 +1,4 @@
-<?php include('../tk/template/siswa/header.php') ?>
+<?php include('template/siswa/header.php');?>
   <div class="login">
     <div class="container">
       <?php
@@ -38,4 +38,4 @@
       </form> 
     </div>
   </div>
-  <?php include('../tk/template/siswa/footer.php') ?>
+<?php    include('template/siswa/footer.php')?>
