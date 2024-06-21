@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <link rel="icon" type="image/png" href="assets/img/logo.png">
     
-    <title>Tk Cahaya Nusantara</title>
+    <title>TK Cahaya Nusantara</title>
     <style>
         .jumbotron {
             position: relative;
