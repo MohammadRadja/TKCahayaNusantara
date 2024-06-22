@@ -13,8 +13,11 @@ if (!isset($_SESSION['status']) || $_SESSION['status'] != 'login' || $_SESSION['
 $id_user = $_SESSION['id_users'] ?? 'default_id'; // Gunakan nilai default jika tidak ada id_users
 
 // Query untuk mendapatkan data siswa
-$sql_pendaftar = "SELECT * FROM siswa WHERE id_siswa = '$id_user'";
-$result_pendaftaran = mysqli_query($koneksi, $sql_pendaftar);
+$sql_pendaftar = "SELECT * FROM siswa WHERE id_siswa = ?";
+$stmt_pendaftaran = $koneksi->prepare($sql_pendaftar);
+$stmt_pendaftaran->bind_param("i", $id_user);
+$stmt_pendaftaran->execute();
+$result_pendaftaran = $stmt_pendaftaran->get_result();
 // Periksa apakah query berhasil dijalankan
 if ($result_pendaftaran === false) {
     die("Error pada query pendaftar: " . mysqli_error($koneksi));
@@ -27,8 +30,11 @@ if (!$data_pendaftar) {
 }
 
 // Query untuk mendapatkan data orang tua
-$sql_orangtua = "SELECT * FROM orangtua WHERE id_siswa = '$id_user'";
-$result_orangtua = mysqli_query($koneksi, $sql_orangtua);
+$sql_orangtua = "SELECT * FROM orangtua WHERE id_siswa = ?";
+$stmt_orangtua = $koneksi->prepare($sql_orangtua);
+$stmt_orangtua->bind_param("i", $id_user);
+$stmt_orangtua->execute();
+$result_orangtua = $stmt_orangtua->get_result();
 // Periksa apakah query berhasil dijalankan
 if ($result_orangtua === false) {
     die("Error pada query orangtua: " . mysqli_error($koneksi));
@@ -41,34 +47,19 @@ if (!$data_orangtua) {
 }
 
 
-// Query untuk mendapatkan data kk
-$sql_kk = "SELECT foto_kk FROM dokumen WHERE id_siswa = '$id_user'";
-$result_kk = mysqli_query($koneksi, $sql_kk);
-// Periksa apakah query berhasil dijalankan
-if ($result_kk === false) {
-    die("Error pada query kartu keluarga: " . mysqli_error($koneksi));
-}
-// Ambil data siswa
-$data_kk = mysqli_fetch_array($result_kk);
+// Query untuk mendapatkan data dokumen
+$sql_dokumen = "SELECT *FROM dokumen WHERE id_siswa = ?";
+$stmt_dokumen = $koneksi->prepare($sql_dokumen);
+$stmt_dokumen->bind_param("i", $id_user);
+$stmt_dokumen->execute();
+$result_dokumen = $stmt_dokumen->get_result();
+$data_dokumen = mysqli_fetch_array($result_dokumen);
 // Pastikan ada data yang ditemukan
-if (!$data_kk) {
-    $error_messages[] = "Silahkan upload foto kartu keluarga";
+if (!$data_dokumen) {
+    $error_messages[] = "Silahkan upload foto kartu keluarga & akte kelahiran";
 }
 
 
-// Query untuk mendapatkan data akte
-$sql_akte = "SELECT foto_akte FROM dokumen WHERE id_siswa = '$id_user'";
-$result_akte = mysqli_query($koneksi, $sql_akte);
-// Periksa apakah query berhasil dijalankan
-if ($result_akte === false) {
-    die("Error pada query akte kelahiran: " . mysqli_error($koneksi));
-}
-// Ambil data siswa
-$data_akte = mysqli_fetch_array($result_akte);
-// Pastikan ada data yang ditemukan
-if (!$data_akte) {
-    $error_messages[] = "Silahkan upload foto akte kelahiran";
-}
 // Logika Status Pembayaran
 if (mysqli_num_rows($result_pendaftaran) > 0) {
     // Ambil data pendaftar dari hasil query sebelumnya
@@ -152,78 +143,70 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btn_update_profile']))
     $nama_ibu = $_POST['nama_ibu'] ?? '';
     $pekerjaan_ibu = $_POST['pekerjaan_ibu'] ?? '';
     $telp_ibu = $_POST['telp_ibu'] ?? '';
-    $randomId = rand(100, 999);
-
-    // Data Tambahan
-    $foto_profil = $_POST['foto_profil'] ?? '';
-    $foto_kk = $_FILES['foto_kk'] ?? '';
-    $foto_akte = $_FILES['foto_akte'] ?? '';
 
     // Batas ukuran file dalam bytes (misalnya 2MB)
     $max_file_size = 2 * 1024 * 1024;
-
-    // Tipe file yang diizinkan untuk foto profil
+    // Tipe file yang diizinkan untuk foto
     $allowed_file_types = ['image/jpeg', 'image/png', 'image/gif'];
+
+    // Direktori upload
+    $upload_dirs = [
+        'profil' => "../assets/profil", // Contoh direktori untuk foto profil
+        'kk' => "../assets/dokumen/kartukeluarga", // Direktori untuk foto KK
+        'akte' => "../assets/dokumen/aktekelahiran" // Direktori untuk foto akte kelahiran
+    ];
 
     // Inisialisasi pesan kesalahan
     $error_messages = [];
+    $uploaded_files = [];
 
-    // Proses unggah foto profil jika ada
-    if (!empty($_FILES['profil']['name'])) {
-        $file_name = $_FILES['profil']['name'];
-        $file_tmp = $_FILES['profil']['tmp_name'];
-        $file_size = $_FILES['profil']['size'];
-        $file_type = $_FILES['profil']['type'];
-        $upload_dir = "../assets/profil/";
+    // Fungsi untuk mengupload file
+    function upload_file($file, $dir, $allowed_types, $max_size, $error_messages) {
+        $file_name = $file['name'];
+        $file_tmp = $file['tmp_name'];
+        $file_size = $file['size'];
+        $file_type = $file['type'];
 
         // Validasi ukuran file
-        if ($file_size > $max_file_size) {
-            $error_messages[] = "Ukuran file profil terlalu besar. Maksimum ukuran file adalah 2MB.";
+        if ($file_size > $max_size) {
+            $error_messages[] = "Ukuran file $file_name terlalu besar. Maksimum ukuran file adalah 2MB.";
+            return false;
         }
 
         // Validasi tipe file
-        if (!in_array($file_type, $allowed_file_types)) {
-            $error_messages[] = "Tipe file profil tidak valid. Hanya diperbolehkan mengunggah file gambar (jpeg, png, gif).";
+        if (!in_array($file_type, $allowed_types)) {
+            $error_messages[] = "Tipe file $file_name tidak valid. Hanya diperbolehkan mengunggah file gambar (jpeg, png, gif).";
+            return false;
         }
 
         // Pastikan direktori upload ada dan dapat ditulisi
-        if (!is_dir($upload_dir) || !is_writable($upload_dir)) {
-            die("Direktori upload profil tidak ada atau tidak dapat ditulisi.");
+        if (!is_dir($dir) || !is_writable($dir)) {
+            $error_messages[] = "Direktori upload $dir tidak ada atau tidak dapat ditulisi.";
+            return false;
         }
 
-        // Jika tidak ada kesalahan validasi, pindahkan file
-        if (empty($error_messages)) {
-            if (move_uploaded_file($file_tmp, $upload_dir . $file_name)) {
-                // Berhasil upload, siapkan query update dengan foto profil
-                $sql_update_profil = "UPDATE siswa SET 
-                    nama = ?, 
-                    tanggal_lahir = ?, 
-                    jenis_kelamin = ?, 
-                    agama = ?, 
-                    alamat = ?, 
-                    email_orangtua = ?, 
-                    no_telpon = ?, 
-                    foto_profil = ?
-                    WHERE id_siswa = ?";
-                $stmt_profil = $koneksi->prepare($sql_update_profil);
-                $stmt_profil->bind_param("ssssssssi", $nama, $tanggal_lahir, $jenis_kelamin, $agama, $alamat, $email_orang_tua, $no_telp_orang_tua, $file_name, $id_user);
-            } else {
-                $error_messages[] = "Gagal mengunggah file profil.";
-            }
+        // Pindahkan file yang diunggah ke direktori upload
+        if (move_uploaded_file($file_tmp, $dir . $file_name)) {
+            return $file_name;
+        } else {
+            $error_messages[] = "Gagal mengunggah file $file_name.";
+            return false;
         }
-    } else {
-        // Update data tanpa mengubah foto profil
-        $sql_update_profil = "UPDATE siswa SET 
-            nama = ?, 
-            tanggal_lahir = ?, 
-            jenis_kelamin = ?, 
-            agama = ?, 
-            alamat = ?, 
-            email_orangtua = ?, 
-            no_telpon = ?
-            WHERE id_siswa = ?";
-        $stmt_profil = $koneksi->prepare($sql_update_profil);
-        $stmt_profil->bind_param("ssssssi", $nama, $tanggal_lahir, $jenis_kelamin, $agama, $alamat, $email_orang_tua, $no_telp_orang_tua, $id_user);
+    }
+
+    // Proses upload foto profil
+    if (!empty($_FILES['profil']['name'])) {
+        $uploaded_files['profil'] = upload_file($_FILES['profil'], $upload_dirs['profil'], $allowed_file_types, $max_file_size, $error_messages);
+    }
+
+    // Proses upload foto KK
+    if (!empty($_FILES['foto_kk']['name'])) {
+        $uploaded_files['kk'] = upload_file($_FILES['foto_kk'], $upload_dirs['kk'], $allowed_file_types, $max_file_size, $error_messages);
+    }
+
+    // Proses upload foto Akte Kelahiran
+    if (!empty($_FILES['foto_akte']['name'])) {
+        $uploaded_files['akte'] = upload_file($_FILES['foto_akte'], $upload_dirs['akte'], $allowed_file_types, $max_file_size, $error_messages);
     }
 
     // Handle kesalahan validasi atau pengunggahan
@@ -233,174 +216,52 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btn_update_profile']))
         exit;
     }
 
-    // Lakukan query untuk mengupdate profil siswa
+    // Update data profil siswa di database
+    $sql_update_profil = "UPDATE siswa SET 
+        nama = ?, 
+        tanggal_lahir = ?, 
+        jenis_kelamin = ?, 
+        agama = ?, 
+        alamat = ?, 
+        email_orangtua = ?, 
+        no_telpon = ?" . 
+        (!empty($uploaded_files['profil']) ? ", foto_profil = ?" : "") . 
+        " WHERE id_siswa = ?";
+    $stmt_profil = $koneksi->prepare($sql_update_profil);
+    if (!empty($uploaded_files['profil'])) {
+        $stmt_profil->bind_param("ssssssssi", $nama, $tanggal_lahir, $jenis_kelamin, $agama, $alamat, $email_orang_tua, $no_telp_orang_tua, $uploaded_files['profil'], $id_user);
+    } else {
+        $stmt_profil->bind_param("sssssssi", $nama, $tanggal_lahir, $jenis_kelamin, $agama, $alamat, $email_orang_tua, $no_telp_orang_tua, $id_user);
+    }
+
     if ($stmt_profil->execute()) {
-        // Update berhasil, lanjutkan dengan data tambahan (orang tua, foto KK, foto Akte)
-        // Lakukan query untuk update data orang tua jika ada perubahan
+        // Update data orang tua
         $sql_update_orang_tua = "INSERT INTO orangtua (id_siswa, nama_ayah, pekerjaan_ayah, telp_ayah, nama_ibu, pekerjaan_ibu, telp_ibu)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)";
+                                VALUES (?, ?, ?, ?, ?, ?, ?)";
         $stmt_orangtua = mysqli_prepare($koneksi, $sql_update_orang_tua);
         mysqli_stmt_bind_param($stmt_orangtua, 'issssss', $id_user, $nama_ayah, $pekerjaan_ayah, $telp_ayah, $nama_ibu, $pekerjaan_ibu, $telp_ibu);
         mysqli_stmt_execute($stmt_orangtua);
 
-        // Lakukan query untuk update foto KK jika ada perubahan
-        if (!empty($foto_kk['name'])) {
-            $file_name_kk = $foto_kk['name'];
-            $file_tmp_kk = $foto_kk['tmp_name'];
-            $file_size_kk = $foto_kk['size'];
-            $file_type_kk = $foto_kk['type'];
-            $upload_dir_kk = "../assets/dokumen/KartuKeluarga";
-
-            // Validasi ukuran file
-            if ($file_size_kk > $max_file_size) {
-                $_SESSION['update_profile_error'] = "Ukuran file Kartu Keluarga terlalu besar. Maksimum ukuran file adalah 2MB.";
-                echo '<script>window.location.href = "../siswa/profil.php";</script>';
-                exit;   
+        // Update data dokumen (KK dan Akte)
+        if ($stmt_profil->execute()) {
+            // Update data dokumen (KK dan Akte)
+            if (!empty($uploaded_files['kk']) || !empty($uploaded_files['akte'])) {
+                $sql_dokumen = "INSERT INTO dokumen (id_siswa, foto_kk, foto_akte) VALUES (?, ?, ?)";
+                $stmt_dokumen = $koneksi->prepare($sql_dokumen);
+                $stmt_dokumen->bind_param("iss", $id_user, $file_name_kk, $file_name_akte);
+                $file_name_kk = $uploaded_files['kk'] ?? ''; // Pastikan file KK dan Akte telah diunggah sebelum bind
+                $file_name_akte = $uploaded_files['akte'] ?? ''; // Menyesuaikan dengan nama variabel yang Anda gunakan
+                $stmt_dokumen->execute();
+                $_SESSION['update_profile_success'] = "Profil berhasil diperbarui.";
             }
-
-            // Validasi tipe file
-            if (!in_array($file_type_kk, $allowed_file_types)) {
-                $_SESSION['update_profile_error'] = "Tipe file Kartu Keluarga tidak valid. Hanya diperbolehkan mengunggah file gambar (jpeg, png, gif).";
-                echo '<script>window.location.href = "../siswa/profil.php";</script>';
-                exit;  
-            }
-
-            // Pastikan direktori upload ada dan dapat ditulisi
-            if (!is_dir($upload_dir_kk) || !is_writable($upload_dir_kk)) {
-                die("Direktori upload Kartu Keluarga tidak ada atau tidak dapat ditulisi.");
-            }
-
-            // Pindahkan file yang diunggah ke direktori upload
-            if (move_uploaded_file($file_tmp_kk, $upload_dir_kk . $file_name_kk)) {
-                // Update nama file foto KK di database
-                $sql_update_dokumen = "INSERT INTO dokumen (id_siswa, foto_kk) VALUES (?, ?)";
-                $stmt_dokumen = mysqli_prepare($koneksi, $sql_update_dokumen);
-                mysqli_stmt_bind_param($stmt_dokumen, "is", $randomId, $file_name_kk);
-                mysqli_stmt_execute($stmt_dokumen);
-            } else {
-                $_SESSION['update_profile_error'] = "Gagal mengunggah file Kartu Keluarga.";
-                echo '<script>window.location.href = "../siswa/profil.php";</script>';
-                exit;  
-            }
+        } else {
+            $_SESSION['update_profile_error'] = "Error saat mengupdate profil: " . $stmt_profil->error;
         }
-
-        // Lakukan query untuk update foto Akte Kelahiran jika ada perubahan
-        if (!empty($foto_akte['name'])) {
-            $file_name_akte = $foto_akte['name'];
-            $file_tmp_akte = $foto_akte['tmp_name'];
-            $file_size_akte = $foto_akte['size'];
-            $file_type_akte = $foto_akte['type'];
-            $upload_dir_akte = "../assets/dokumen/AkteKelahiran";
-
-            // Validasi ukuran file
-            if ($file_size_akte > $max_file_size) {
-                $_SESSION['update_profile_error'] = "Ukuran file Akte Kelahiran terlalu besar. Maksimum ukuran file adalah 2MB.";
-                echo '<script>window.location.href = "../siswa/profil.php";</script>';
-                exit;  
-            }
-
-            // Validasi tipe file
-            if (!in_array($file_type_akte, $allowed_file_types)) {
-                $_SESSION['update_profile_error'] = "Tipe file Akte Kelahiran tidak valid. Hanya diperbolehkan mengunggah file gambar (jpeg, png, gif).";
-                echo '<script>window.location.href = "../siswa/profil.php";</script>';
-                exit;  
-            }
-
-            // Pastikan direktori upload ada dan dapat ditulisi
-            if (!is_dir($upload_dir_akte) || !is_writable($upload_dir_akte)) {
-                die("Direktori upload Akte Kelahiran tidak ada atau tidak dapat ditulisi.");
-            }
-
-            // Pindahkan file yang diunggah ke direktori upload
-            if (move_uploaded_file($file_tmp_akte, $upload_dir_akte . $file_name_akte)) {
-                // Update nama file foto Akte Kelahiran di database
-                $sql_update_dokumen = "INSERT INTO dokumen (id_siswa, foto_akte) VALUES (?, ?)";
-                $stmt_dokumen = mysqli_prepare($koneksi, $sql_update_dokumen);
-                mysqli_stmt_bind_param($stmt_dokumen, "is", $randomId, $file_name_akte);
-                mysqli_stmt_execute($stmt_dokumen);
-            } else {
-                $_SESSION['update_profile_error'] = "Gagal mengunggah file Akte Kelahiran.";
-                echo '<script>window.location.href = "../siswa/profil.php";</script>';
-                exit;  
-            }
-        }
-
-        // Redirect back to profile page after updates
-        echo '<script>window.location.href = "../siswa/profil.php";</script>';
-        exit;
-
-
-        // Jika semua query berhasil dieksekusi, maka redirect dengan pesan sukses
-        $_SESSION['update_profile_success'] = "Profil berhasil diperbarui.";
-
-        // Lakukan query untuk mengupdate profil siswa
-    if ($stmt_profil->execute()) {
-        // Update berhasil, lanjutkan dengan data tambahan (orang tua, foto KK, foto Akte)
-        
-        // Ambil Data Orang Tua
-        $sql_orangtua = "SELECT * FROM orangtua WHERE id_siswa = ?";
-        $stmt_orangtua = $koneksi->prepare($sql_orangtua);
-        $stmt_orangtua->bind_param("i", $id_user);
-        $stmt_orangtua->execute();
-        $result_orangtua = $stmt_orangtua->get_result();
-
-        // Ambil Data Foto KK
-        $sql_kk = "SELECT foto_kk FROM dokumen WHERE id_siswa = ?";
-        $stmt_kk = $koneksi->prepare($sql_kk);
-        $stmt_kk->bind_param("i", $id_user);
-        $stmt_kk->execute();
-        $result_kk = $stmt_kk->get_result();
-
-        // Ambil Data Foto Akte Kelahiran
-        $sql_akte = "SELECT foto_akte FROM dokumen WHERE id_siswa = ?";
-        $stmt_akte = $koneksi->prepare($sql_akte);
-        $stmt_akte->bind_param("i", $id_user);
-        $stmt_akte->execute();
-        $result_akte = $stmt_akte->get_result();
-
-        // Ambil Data Pendaftar Terbaru
-        $sql_pendaftar = "SELECT * FROM siswa WHERE id_siswa = ?";
-        $stmt_pendaftar = $koneksi->prepare($sql_pendaftar);
-        $stmt_pendaftar->bind_param("i", $id_user);
-        $stmt_pendaftar->execute();
-        $result_pendaftaran = $stmt_pendaftar->get_result();
-        if ($result_pendaftaran->num_rows > 0) {
-            $data_pendaftar = $result_pendaftaran->fetch_array(MYSQLI_ASSOC);
-            $_SESSION['data_terbaru'] = $data_pendaftar;
-        }
-
-        // Simpan data orang tua ke dalam sesi
-        if ($result_orangtua->num_rows > 0) {
-            $data_orangtua = $result_orangtua->fetch_array(MYSQLI_ASSOC);
-            $_SESSION['data_orangtua'] = $data_orangtua;
-        }
-
-        // Simpan nama file KK ke dalam sesi
-        if ($result_kk->num_rows > 0) {
-            $data_kk = $result_kk->fetch_array(MYSQLI_ASSOC);
-            $_SESSION['data_kk'] = $data_kk['foto_kk'];
-        }
-
-        // Simpan nama file Akte Kelahiran ke dalam sesi
-        if ($result_akte->num_rows > 0) {
-            $data_akte = $result_akte->fetch_array(MYSQLI_ASSOC);
-            $_SESSION['data_akte'] = $data_akte['foto_akte'];
-        }
-
-        // Set pesan sukses
-        $_SESSION['update_profile_success'] = "Profil berhasil diperbarui.";
-    } else {
-        // Gagal update profil
-        $_SESSION['update_profile_error'] = "Error saat mengupdate profil: " . $stmt_profil->error;
-    }
+    }        
 
     // Redirect ke halaman profil
-    // header('location: ../siswa/profil.php');
-                // exit;
-                echo '<script>window.location.href = "../siswa/profil.php";</script>';
-                exit;  
-
-    }
+    header('location: ../siswa/profil.php');
+    exit;
 }
 
 // Tutup koneksi

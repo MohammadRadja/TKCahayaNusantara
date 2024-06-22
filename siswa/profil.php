@@ -106,25 +106,25 @@ if (isset($_SESSION['update_profile_success'])) { ?>
                             </div>
 
                             <div class="mb-3">
-                                <label for="kk" class="form-label">Upload Kartu Keluarga</label>
+                                <label for="kk" class="form-label">Foto Kartu Keluarga</label>
                                 <?php
-                                $foto_kk = isset($data_kk['foto_kk']) && !empty($data_kk['foto_kk']) ? '../assets/dokumen/KartuKeluarga/' . $data_kk['foto_kk'] : '../assets/dokumen/KartuKeluarga/default.png';
+                                $foto_kk = isset($data_dokumen['foto_kk']) && !empty($data_dokumen['foto_kk']) ? '../assets/dokumen/kartukeluarga/' . $data_dokumen['foto_kk'] : '../assets/dokumen/kartukeluarga/default.png';
                                 ?>
                                 <img src="<?= $foto_kk ?>" class="img-fluid" alt="Foto Kartu Keluarga">
                                 <input type="file" name="kk" class="form-control mt-2" id="kk">
                             </div>
                             <div class="mb-3">
-                                <label for="akte" class="form-label">Upload Akte Kelahiran</label>
+                                <label for="akte" class="form-label">Akte Kelahiran</label>
                                 <?php
-                                $foto_akte = isset($data_akte['foto_akte']) && !empty($data_akte['foto_akte']) ? '../assets/dokumen/AkteKelahiran/' . $data_akte['foto_akte'] : '../assets/dokumen/AkteKelahiran/default.png';
+                                $foto_akte = isset($data_dokumen['foto_akte']) && !empty($data_dokumen['foto_akte']) ? '../assets/dokumen/aktekelahiran/' . $data_dokumen['foto_akte'] : '../assets/dokumen/aktekelahiran/default.png';
                                 ?>
                                 <img src="<?= $foto_akte ?>" class="img-fluid" alt="Foto Akte Kelahiran">
                                 <input type="file" name="akte" class="form-control mt-2" id="akte">
                             </div>
                             <div class="mb-3">
-                                <label for="profil" class="form-label">Upload Foto Siswa</label>
+                                <label for="profil" class="form-label">Foto Siswa</label>
                                 <?php
-                                $foto = isset($data_pendaftar['foto_profil']) && !empty($data_pendaftar['foto_profil']) ? '../assets/profil/' . $data_pendaftar['foto_profil'] : '../assets/profil/default.png';
+                                $foto_profil = isset($data_pendaftar['foto_profil']) && !empty($data_pendaftar['foto_profil']) ? '../assets/profil/' . $data_pendaftar['foto_profil'] : '../assets/profil/default.png';
                                 ?>
                                 <img src="<?= $foto_profil ?>" class="img-fluid" alt="Foto Profil Siswa">
                                 <input type="file" name="profil" class="form-control mt-2">
