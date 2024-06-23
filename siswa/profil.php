@@ -104,7 +104,6 @@ if (isset($_SESSION['update_profile_success'])) { ?>
                                 <label for="mother_phone" class="form-label">Telepon Ibu</label>
                                 <input type="tel" value="<?= htmlspecialchars($data_orangtua['telp_ibu'] ?? '') ?>" class="form-control" id="telp_ibu" name="telp_ibu">
                             </div>
-
                             <div class="mb-3">
                                 <label for="kk" class="form-label">Foto Kartu Keluarga</label>
                                 <?php
@@ -120,7 +119,7 @@ if (isset($_SESSION['update_profile_success'])) { ?>
                                 ?>
                                 <img src="<?= $foto_akte ?>" class="img-fluid" alt="Foto Akte Kelahiran">
                                 <input type="file" name="akte" class="form-control mt-2" id="akte">
-                            </div>
+                            </div>                                                                              
                             <div class="mb-3">
                                 <label for="profil" class="form-label">Foto Siswa</label>
                                 <?php

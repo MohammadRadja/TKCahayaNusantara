@@ -123,7 +123,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btn_bayar'])) {
     exit;
 }
 
-
 // Logika Edit Data Profil
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btn_update_profile'])) {
     // Tangkap semua data POST di sini
@@ -161,32 +160,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btn_update_profile']))
     $uploaded_files = [];
 
     // Fungsi untuk mengupload file
-    function upload_file($file, $dir, $allowed_types, $max_size, $error_messages) {
+    function upload_file($file, $dir, $allowed_types, $max_size, &$error_messages) {
         $file_name = $file['name'];
         $file_tmp = $file['tmp_name'];
         $file_size = $file['size'];
         $file_type = $file['type'];
-
+    
         // Validasi ukuran file
         if ($file_size > $max_size) {
             $error_messages[] = "Ukuran file $file_name terlalu besar. Maksimum ukuran file adalah 2MB.";
             return false;
         }
-
+    
         // Validasi tipe file
         if (!in_array($file_type, $allowed_types)) {
             $error_messages[] = "Tipe file $file_name tidak valid. Hanya diperbolehkan mengunggah file gambar (jpeg, png, gif).";
             return false;
         }
-
+    
         // Pastikan direktori upload ada dan dapat ditulisi
         if (!is_dir($dir) || !is_writable($dir)) {
             $error_messages[] = "Direktori upload $dir tidak ada atau tidak dapat ditulisi.";
             return false;
         }
-
+    
         // Pindahkan file yang diunggah ke direktori upload
-        if (move_uploaded_file($file_tmp, $dir . $file_name)) {
+        if (move_uploaded_file($file_tmp, $dir . '/' . $file_name)) {
             return $file_name;
         } else {
             $error_messages[] = "Gagal mengunggah file $file_name.";
@@ -200,13 +199,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btn_update_profile']))
     }
 
     // Proses upload foto KK
-    if (!empty($_FILES['foto_kk']['name'])) {
-        $uploaded_files['kk'] = upload_file($_FILES['foto_kk'], $upload_dirs['kk'], $allowed_file_types, $max_file_size, $error_messages);
+    if (!empty($_FILES['kk']['name'])) {
+        $uploaded_files['kk'] = upload_file($_FILES['kk'], $upload_dirs['kk'], $allowed_file_types, $max_file_size, $error_messages);
     }
 
     // Proses upload foto Akte Kelahiran
-    if (!empty($_FILES['foto_akte']['name'])) {
-        $uploaded_files['akte'] = upload_file($_FILES['foto_akte'], $upload_dirs['akte'], $allowed_file_types, $max_file_size, $error_messages);
+    if (!empty($_FILES['akte']['name'])) {
+        $uploaded_files['akte'] = upload_file($_FILES['akte'], $upload_dirs['akte'], $allowed_file_types, $max_file_size, $error_messages);
     }
 
     // Handle kesalahan validasi atau pengunggahan
@@ -236,32 +235,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['btn_update_profile']))
 
     if ($stmt_profil->execute()) {
         // Update data orang tua
-        $sql_update_orang_tua = "INSERT INTO orangtua (id_siswa, nama_ayah, pekerjaan_ayah, telp_ayah, nama_ibu, pekerjaan_ibu, telp_ibu)
-                                VALUES (?, ?, ?, ?, ?, ?, ?)";
-        $stmt_orangtua = mysqli_prepare($koneksi, $sql_update_orang_tua);
-        mysqli_stmt_bind_param($stmt_orangtua, 'issssss', $id_user, $nama_ayah, $pekerjaan_ayah, $telp_ayah, $nama_ibu, $pekerjaan_ibu, $telp_ibu);
-        mysqli_stmt_execute($stmt_orangtua);
+        $sql_update_orang_tua = "UPDATE orangtua SET 
+            nama_ayah = ?, 
+            pekerjaan_ayah = ?, 
+            telp_ayah = ?, 
+            nama_ibu = ?, 
+            pekerjaan_ibu = ?, 
+            telp_ibu = ? 
+            WHERE id_siswa = ?";
+        $stmt_orangtua = $koneksi->prepare($sql_update_orang_tua);
+        $stmt_orangtua->bind_param("ssssssi", $nama_ayah, $pekerjaan_ayah, $telp_ayah, $nama_ibu, $pekerjaan_ibu, $telp_ibu, $id_user);
+        $stmt_orangtua->execute();
 
         // Update data dokumen (KK dan Akte)
-        if ($stmt_profil->execute()) {
-            // Update data dokumen (KK dan Akte)
-            if (!empty($uploaded_files['kk']) || !empty($uploaded_files['akte'])) {
-                $sql_dokumen = "INSERT INTO dokumen (id_siswa, foto_kk, foto_akte) VALUES (?, ?, ?)";
-                $stmt_dokumen = $koneksi->prepare($sql_dokumen);
-                $stmt_dokumen->bind_param("iss", $id_user, $file_name_kk, $file_name_akte);
-                $file_name_kk = $uploaded_files['kk'] ?? ''; // Pastikan file KK dan Akte telah diunggah sebelum bind
-                $file_name_akte = $uploaded_files['akte'] ?? ''; // Menyesuaikan dengan nama variabel yang Anda gunakan
-                $stmt_dokumen->execute();
-                $_SESSION['update_profile_success'] = "Profil berhasil diperbarui.";
-            }
-        } else {
-            $_SESSION['update_profile_error'] = "Error saat mengupdate profil: " . $stmt_profil->error;
-        }
-    }        
+        if (!empty($uploaded_files['kk']) || !empty($uploaded_files['akte'])) {
+            $file_name_kk = $uploaded_files['kk'] ?? '';
+            $file_name_akte = $uploaded_files['akte'] ?? '';
 
-    // Redirect ke halaman profil
-    header('location: ../siswa/profil.php');
-    exit;
+            // Gunakan INSERT INTO ... ON DUPLICATE KEY UPDATE untuk mengatasi konflik kunci ganda jika diperlukan
+            $sql_dokumen = "INSERT INTO dokumen (id_siswa, foto_kk, foto_akte) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE foto_kk = VALUES(foto_kk), foto_akte = VALUES(foto_akte)";
+            $stmt_dokumen = $koneksi->prepare($sql_dokumen);
+            $stmt_dokumen->bind_param("iss", $id_user, $file_name_kk, $file_name_akte);
+            $stmt_dokumen->execute();
+
+            if ($stmt_dokumen->affected_rows > 0) {
+                $_SESSION['update_profile_success'] = "Profil berhasil diperbarui.";
+            } else {
+                $_SESSION['update_profile_error'] = "Gagal memperbarui dokumen: " . $stmt_dokumen->error;
+            }
+        }
+        // Redirect ke halaman profil
+        header('location: ../siswa/profil.php');
+        exit;
+    }
 }
 
 // Tutup koneksi
