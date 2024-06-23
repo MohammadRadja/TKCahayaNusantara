@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jun 18, 2024 at 05:00 PM
--- Server version: 8.0.30
--- PHP Version: 8.0.30
+-- Waktu pembuatan: 23 Jun 2024 pada 07.56
+-- Versi server: 8.0.30
+-- Versi PHP: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -24,7 +24,37 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `siswa`
+-- Struktur dari tabel `dokumen`
+--
+
+CREATE TABLE `dokumen` (
+  `id` int NOT NULL,
+  `id_siswa` int DEFAULT NULL,
+  `foto_kk` varchar(255) DEFAULT NULL,
+  `foto_akte` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `orangtua`
+--
+
+CREATE TABLE `orangtua` (
+  `id_orangtua` int NOT NULL,
+  `id_siswa` int DEFAULT NULL,
+  `nama_ayah` varchar(100) DEFAULT NULL,
+  `pekerjaan_ayah` varchar(100) DEFAULT NULL,
+  `telp_ayah` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `nama_ibu` varchar(100) DEFAULT NULL,
+  `pekerjaan_ibu` varchar(100) DEFAULT NULL,
+  `telp_ibu` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `siswa`
 --
 
 CREATE TABLE `siswa` (
@@ -36,23 +66,14 @@ CREATE TABLE `siswa` (
   `alamat` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `email_orangtua` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `no_telpon` varchar(13) COLLATE utf8mb4_general_ci NOT NULL,
-  `status_pendaftaran` varchar(20) COLLATE utf8mb4_general_ci NOT NULL
+  `status_pendaftaran` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
+  `foto_profil` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `siswa`
---
-
-INSERT INTO `siswa` (`id_siswa`, `nama`, `tanggal_lahir`, `jenis_kelamin`, `agama`, `alamat`, `email_orangtua`, `no_telpon`, `status_pendaftaran`) VALUES
-(1, 'radja', '2024-06-14', 'L', 'Kristen', 'Tangerang', 'radja@wk', '081awdawd', 'belum diterima'),
-(2, 'testing', '2024-06-01', 'Laki-laki', 'testing', 'testing', 'maulbowo@gmail.com', '09109212', 'belum diterima'),
-(3, 'maul', '2024-06-15', 'perempuan', 'islam', 'tangerang', 'test@gmail.com', '08121', 'belum diterima'),
-(4, 'maul', '2024-06-15', 'perempuan', 'islam', 'tangerang', 'test@gmail.com', '08121', 'belum diterima');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `transaksi`
+-- Struktur dari tabel `transaksi`
 --
 
 CREATE TABLE `transaksi` (
@@ -63,17 +84,10 @@ CREATE TABLE `transaksi` (
   `bukti_pembayaran` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
---
--- Dumping data for table `transaksi`
---
-
-INSERT INTO `transaksi` (`id_transaksi`, `id_siswa`, `tanggal_bayar`, `jumlah_bayar`, `bukti_pembayaran`) VALUES
-(1, 1, '2024-06-16', 123123.00, 'Screenshot 2024-06-15 191614.png');
-
 -- --------------------------------------------------------
 
 --
--- Table structure for table `user`
+-- Struktur dari tabel `user`
 --
 
 CREATE TABLE `user` (
@@ -84,20 +98,18 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `user`
+-- Dumping data untuk tabel `user`
 --
 
 INSERT INTO `user` (`id`, `username`, `password`, `level`) VALUES
-(1, 'maul', 'd773599f3267284ba63921979999445e', 'siswa'),
-(2, 'radja', '42afcd328885ec205cb656b53194e816', 'admin'),
-(5, 'admin', '21232f297a57a5a743894a0e4a801fc3', 'admin'),
-(6, 'admin', '21232f297a57a5a743894a0e4a801fc3', 'admin');
+(1, 'admin', '21232f297a57a5a743894a0e4a801fc3', 'admin'),
+(903, 'acid', 'f923389424a4f813fe311e13e24932f1', 'siswa');
 
 -- --------------------------------------------------------
 
 --
--- Stand-in structure for view `view_pembayaran`
--- (See below for the actual view)
+-- Stand-in struktur untuk tampilan `view_pembayaran`
+-- (Lihat di bawah untuk tampilan aktual)
 --
 CREATE TABLE `view_pembayaran` (
 `agama` varchar(20)
@@ -118,7 +130,7 @@ CREATE TABLE `view_pembayaran` (
 -- --------------------------------------------------------
 
 --
--- Structure for view `view_pembayaran`
+-- Struktur untuk view `view_pembayaran`
 --
 DROP TABLE IF EXISTS `view_pembayaran`;
 
@@ -129,52 +141,90 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 
 --
--- Indexes for table `siswa`
+-- Indeks untuk tabel `dokumen`
+--
+ALTER TABLE `dokumen`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `id_siswa` (`id_siswa`);
+
+--
+-- Indeks untuk tabel `orangtua`
+--
+ALTER TABLE `orangtua`
+  ADD PRIMARY KEY (`id_orangtua`),
+  ADD KEY `id_siswa` (`id_siswa`);
+
+--
+-- Indeks untuk tabel `siswa`
 --
 ALTER TABLE `siswa`
   ADD PRIMARY KEY (`id_siswa`);
 
 --
--- Indexes for table `transaksi`
+-- Indeks untuk tabel `transaksi`
 --
 ALTER TABLE `transaksi`
   ADD PRIMARY KEY (`id_transaksi`),
   ADD KEY `id_siswa` (`id_siswa`);
 
 --
--- Indexes for table `user`
+-- Indeks untuk tabel `user`
 --
 ALTER TABLE `user`
   ADD PRIMARY KEY (`id`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT untuk tabel yang dibuang
 --
 
 --
--- AUTO_INCREMENT for table `siswa`
+-- AUTO_INCREMENT untuk tabel `dokumen`
+--
+ALTER TABLE `dokumen`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT untuk tabel `orangtua`
+--
+ALTER TABLE `orangtua`
+  MODIFY `id_orangtua` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+
+--
+-- AUTO_INCREMENT untuk tabel `siswa`
 --
 ALTER TABLE `siswa`
-  MODIFY `id_siswa` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_siswa` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=904;
 
 --
--- AUTO_INCREMENT for table `transaksi`
+-- AUTO_INCREMENT untuk tabel `transaksi`
 --
 ALTER TABLE `transaksi`
-  MODIFY `id_transaksi` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_transaksi` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `user`
+-- AUTO_INCREMENT untuk tabel `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=904;
 
 --
--- Constraints for dumped tables
+-- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
 --
 
 --
--- Constraints for table `transaksi`
+-- Ketidakleluasaan untuk tabel `dokumen`
+--
+ALTER TABLE `dokumen`
+  ADD CONSTRAINT `dokumen_ibfk_1` FOREIGN KEY (`id_siswa`) REFERENCES `siswa` (`id_siswa`);
+
+--
+-- Ketidakleluasaan untuk tabel `orangtua`
+--
+ALTER TABLE `orangtua`
+  ADD CONSTRAINT `orangtua_ibfk_1` FOREIGN KEY (`id_siswa`) REFERENCES `siswa` (`id_siswa`);
+
+--
+-- Ketidakleluasaan untuk tabel `transaksi`
 --
 ALTER TABLE `transaksi`
   ADD CONSTRAINT `transaksi_ibfk_1` FOREIGN KEY (`id_siswa`) REFERENCES `siswa` (`id_siswa`);
